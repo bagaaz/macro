@@ -5,17 +5,33 @@ Public Sub PreencherTrabalho()
     Dim Unidade As String
     Dim resultado As Double
     Dim trabalho As Double
+    Dim resultado1Ano As Double
     Dim resultado3Anos As Double
     Dim resultado5Anos As Double
 
+    ' Definir a planilha ativa (ou especificar um nome se necessário)
     Set ws = ActiveSheet
 
-    ' Percorre as linhas de 3 a 11
-    For i = 3 To 11
+    ' Percorre as linhas de 3 a 100
+    For i = 3 To 100
         ' Pega os valores das colunas E (Ciclo), F (Unidade) e N (Trabalho)
         Ciclo = Trim(ws.Cells(i, 5).Value) ' Coluna E
         Unidade = Trim(ws.Cells(i, 6).Value) ' Coluna F
-        trabalho = ws.Cells(i, 14).Value ' Coluna N (Trabalho)
+
+        ' Verifica se Trabalho está vazio ou não é numérico
+        If IsEmpty(ws.Cells(i, 14).Value) Or Not IsNumeric(ws.Cells(i, 14).Value) Then
+            trabalho = 0 ' Se for vazio, define como zero temporariamente
+        Else
+            trabalho = CDbl(ws.Cells(i, 14).Value) ' Converte para Double
+        End If
+
+        ' ?? SE QUALQUER UM DOS CAMPOS FOR VAZIO, PREENCHER COMO VAZIO E CONTINUAR PARA A PRÓXIMA LINHA
+        If Ciclo = "" Or Unidade = "" Or trabalho = 0 Then
+            ws.Cells(i, 15).Value = ""
+            ws.Cells(i, 16).Value = ""
+            ws.Cells(i, 17).Value = ""
+            GoTo ProximoLoop
+        End If
 
         ' Calcula o valor convertido de ciclo para dias
         resultado = CalcularTrabalhoVBA(Ciclo, Unidade)
@@ -23,18 +39,15 @@ Public Sub PreencherTrabalho()
         ' Verifica se o resultado é válido antes de calcular
         If resultado > 0 Then
             ' Para 1 ano (365 dias)
-            resultado1Ano = (365 / resultado) * trabalho
-            resultado1Ano = Int(resultado1Ano) ' Arredonda para inteiro
+            resultado1Ano = Int((365 / resultado) * trabalho)
 
             ' Para 3 anos (1095 dias)
-            resultado3Anos = (1095 / resultado) * trabalho
-            resultado3Anos = Int(resultado3Anos)
+            resultado3Anos = Int((1095 / resultado) * trabalho)
 
             ' Para 5 anos (1825 dias)
-            resultado5Anos = (1825 / resultado) * trabalho
-            resultado5Anos = Int(resultado5Anos)
+            resultado5Anos = Int((1825 / resultado) * trabalho)
         Else
-            resultado = -1  ' Retorna erro caso os valores sejam inválidos
+            resultado1Ano = -1
             resultado3Anos = -1
             resultado5Anos = -1
         End If
@@ -43,8 +56,11 @@ Public Sub PreencherTrabalho()
         ws.Cells(i, 15).Value = resultado1Ano   ' Coluna O (1 Ano)
         ws.Cells(i, 16).Value = resultado3Anos  ' Coluna P (3 Anos)
         ws.Cells(i, 17).Value = resultado5Anos  ' Coluna Q (5 Anos)
+
+ProximoLoop: ' Rótulo para pular para a próxima iteração do loop
     Next i
 
+    ' Liberar memória
     Set ws = Nothing
 End Sub
 
@@ -101,4 +117,3 @@ Function CalcularTrabalhoVBA(Ciclo As String, Unidade As String) As Integer
             CalcularTrabalhoVBA = -1
     End Select
 End Function
-
