@@ -13,16 +13,18 @@ Public Sub PreencherTrabalho()
     Set ws = ActiveSheet
 
     ' Percorre as linhas de 3 a 100
-    For i = 3 To 100
+    For i = 3 To 5000
         ' Pega os valores das colunas E (Ciclo), F (Unidade) e N (Trabalho)
         Ciclo = Trim(ws.Cells(i, 5).Value) ' Coluna E
         Unidade = Trim(ws.Cells(i, 6).Value) ' Coluna F
 
-        ' Verifica se Trabalho está vazio ou não é numérico
-        If IsEmpty(ws.Cells(i, 14).Value) Or Not IsNumeric(ws.Cells(i, 14).Value) Then
-            trabalho = 0 ' Se for vazio, define como zero temporariamente
+        ' Verifica se as colunas K e L são numéricas antes de calcular o trabalho
+        If Not IsEmpty(ws.Cells(i, 11).Value) And IsNumeric(ws.Cells(i, 11).Value) And Not IsEmpty(ws.Cells(i, 12).Value) And IsNumeric(ws.Cells(i, 12).Value) Then
+            valorK = CDbl(ws.Cells(i, 11).Value) ' Coluna K
+            valorL = CDbl(ws.Cells(i, 12).Value) ' Coluna L
+            trabalho = valorK * valorL ' Cálculo do trabalho
         Else
-            trabalho = CDbl(ws.Cells(i, 14).Value) ' Converte para Double
+            trabalho = 0 ' Se uma delas for vazia ou não numérica, define como zero
         End If
 
         ' ?? SE QUALQUER UM DOS CAMPOS FOR VAZIO, PREENCHER COMO VAZIO E CONTINUAR PARA A PRÓXIMA LINHA
@@ -38,14 +40,17 @@ Public Sub PreencherTrabalho()
 
         ' Verifica se o resultado é válido antes de calcular
         If resultado > 0 Then
-            ' Para 1 ano (365 dias)
+            ' Para 1 ano (360 dias) - normalmente uma ano é 365 dias, mas para simplificar
             resultado1Ano = Int((365 / resultado) * trabalho)
 
-            ' Para 3 anos (1095 dias)
-            resultado3Anos = Int((1095 / resultado) * trabalho)
+            ' Para 3 anos (1080 dias) - normalmente 3 anos são 1095 dias, mas para simplificar
+            ' resultado3Anos = Int((1095 / resultado) * trabalho)
+            resultado3Anos = Int(resultado1Ano * 3)
 
-            ' Para 5 anos (1825 dias)
-            resultado5Anos = Int((1825 / resultado) * trabalho)
+            ' Para 5 anos (1800 dias) - normalmente 5 anos são 1825 dias, mas para simplificar
+            'resultado5Anos = Int((1825 / resultado) * trabalho)
+            resultado5Anos = Int(resultado1Ano * 5)
+
         Else
             resultado1Ano = -1
             resultado3Anos = -1
